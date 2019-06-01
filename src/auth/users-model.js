@@ -17,31 +17,24 @@ const users = new mongoose.Schema(
     password: { type: String, required: true },
     email: { type: String },
     role: { type: String, default: 'user', enum: ['admin', 'editor', 'user'] },
-    capabilities: { type: Array },
   },
   { toObject: { virtuals: true }, toJSON: { virtuals: true } }
 );
 
-users.virtual('_capabilities', {
+users.virtual('capabilities', {
   ref: 'roles',
   localField: 'role',
-  foreignField: 'capabilities',
+  foreignField: 'role',
   justOne: false,
 });
 
-users.pre('find', function() {
+users.pre('findOne', function() {
   try {
-    this.populate('_capabilities');
-  } catch (e) {
-    console.log('Find Error', e);
+    this.populate('capabilities');
+  } catch (error) {
+    console.log('Find Error', error);
   }
 });
-
-const capabilities = {
-  admin: ['create', 'read', 'update', 'delete'],
-  editor: ['create', 'read', 'update'],
-  user: ['read'],
-};
 
 users.pre('save', function(next) {
   bcrypt
@@ -92,10 +85,7 @@ users.statics.authenticateToken = function(token) {
 users.statics.authenticateBasic = function(auth) {
   let query = { username: auth.username };
   return this.findOne(query)
-    .then(user => {
-      console.log(user);
-      return user && user.comparePassword(auth.password);
-    })
+    .then(user => user && user.comparePassword(auth.password))
     .catch(error => {
       throw error;
     });
@@ -108,6 +98,7 @@ users.methods.comparePassword = function(password) {
 };
 
 users.methods.generateToken = function(type) {
+  const capabilities = this.capabilities[0].capabilities;
   let token = {
     id: this._id,
     capabilities: capabilities[this.role],
@@ -123,9 +114,8 @@ users.methods.generateToken = function(type) {
 };
 
 users.methods.can = function(capability) {
-  console.log('asdf');
-
-  return capabilities[this.role].includes(capability);
+  const capabilities = this.capabilities[0].capabilities;
+  return capabilities.includes(capability);
 };
 
 users.methods.generateKey = function() {
