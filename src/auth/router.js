@@ -4,6 +4,7 @@ const express = require('express');
 const authRouter = express.Router();
 
 const User = require('./users-model.js');
+const Role = require('./roles-model.js');
 const auth = require('./middleware.js');
 const oauth = require('./oauth/google.js');
 
@@ -86,6 +87,24 @@ authRouter.delete('/bye-bye', auth('delete'), (request, response, next) => {
 // should require the superuser capability
 authRouter.get('/everything', (request, response, next) => {
   response.status(200).send(`This is ${request.path}`);
+});
+
+// Create roles
+authRouter.get('/createRoles', (request, response, next) => {
+  const capabilities = {
+    admin: ['create', 'read', 'update', 'delete'],
+    editor: ['create', 'read', 'update'],
+    user: ['read'],
+  };
+
+  Object.keys(capabilities).forEach(role =>
+    Role.create({ role, capabilities: capabilities[role] }, error => {
+      if (error) {
+        console.log('The role exist already');
+      }
+    })
+  );
+  response.status(200).send('The roles have been created');
 });
 
 module.exports = authRouter;
