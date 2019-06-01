@@ -3,9 +3,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const Roles = require('./roles-model.js');
-
-console.log(Roles.findOne());
+require('./roles-model.js');
 
 const SINGLE_USE_TOKENS = !!process.env.SINGLE_USE_TOKENS;
 const TOKEN_EXPIRE = process.env.TOKEN_LIFETIME || '5m';
@@ -13,11 +11,30 @@ const SECRET = process.env.SECRET || 'foobar';
 
 const usedTokens = new Set();
 
-const users = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  email: { type: String },
-  role: { type: String, default: 'user', enum: ['admin', 'editor', 'user'] },
+const users = new mongoose.Schema(
+  {
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    email: { type: String },
+    role: { type: String, default: 'user', enum: ['admin', 'editor', 'user'] },
+    capabilities: { type: Array },
+  },
+  { toObject: { virtuals: true }, toJSON: { virtuals: true } }
+);
+
+users.virtual('_capabilities', {
+  ref: 'roles',
+  localField: 'role',
+  foreignField: 'capabilities',
+  justOne: false,
+});
+
+users.pre('find', function() {
+  try {
+    this.populate('_capabilities');
+  } catch (e) {
+    console.log('Find Error', e);
+  }
 });
 
 const capabilities = {
@@ -75,7 +92,10 @@ users.statics.authenticateToken = function(token) {
 users.statics.authenticateBasic = function(auth) {
   let query = { username: auth.username };
   return this.findOne(query)
-    .then(user => user && user.comparePassword(auth.password))
+    .then(user => {
+      console.log(user);
+      return user && user.comparePassword(auth.password);
+    })
     .catch(error => {
       throw error;
     });
@@ -103,7 +123,7 @@ users.methods.generateToken = function(type) {
 };
 
 users.methods.can = function(capability) {
-  // get capabilites from DB
+  console.log('asdf');
 
   return capabilities[this.role].includes(capability);
 };

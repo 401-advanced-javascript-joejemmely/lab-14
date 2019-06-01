@@ -1,10 +1,11 @@
 'use strict';
 
 const mongoose = require('mongoose');
+const users = require('./users-model.js');
 
-const rolesSchema = new mongoose.Schema({
+const roles = new mongoose.Schema({
   role: { type: String, required: true },
   capabilities: { type: Array, required: true },
 });
 
-module.exports = mongoose.model('roles', rolesSchema);
+module.exports = mongoose.model('roles', roles);
