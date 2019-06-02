@@ -7,13 +7,13 @@ const auth = require('../../../src/auth/middleware.js');
 const Users = require('../../../src/auth/users-model.js');
 const Roles = require('../../../src/auth/roles-model.js');
 
-const users = {
+let users = {
   admin: { username: 'admin', password: 'password', role: 'admin' },
   editor: { username: 'editor', password: 'password', role: 'editor' },
   user: { username: 'user', password: 'password', role: 'user' },
 };
 
-const roles = {
+let roles = {
   admin: {
     role: 'admin',
     capabilities: ['create', 'read', 'update', 'delete'],
@@ -120,8 +120,34 @@ describe('Auth Middleware', () => {
   });
 
   describe('user authorization', () => {
-    it('restricts access to a valid user without permissions', () => {}); // it()
+    it('restricts access to a valid user without permissions', () => {
+      let req = {
+        headers: {
+          authorization: 'Basic YWRtaW46cGFzc3dvcmQ=',
+        },
+      };
+      let res = {};
+      let next = jest.fn();
+      let middleware = auth('godpower');
 
-    it('grants access when a user has permission', () => {}); // it()
+      return middleware(req, res, next).then(() => {
+        expect(next).toHaveBeenCalledWith(errorMessage);
+      });
+    }); // it()
+
+    it('grants access when a user has permission', () => {
+      let req = {
+        headers: {
+          authorization: 'Basic YWRtaW46cGFzc3dvcmQ=',
+        },
+      };
+      let res = {};
+      let next = jest.fn();
+      let middleware = auth('delete');
+
+      return middleware(req, res, next).then(() => {
+        expect(next).toHaveBeenCalledWith();
+      });
+    }); // it()
   }); // describe()
 });

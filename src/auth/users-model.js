@@ -11,15 +11,12 @@ const SECRET = process.env.SECRET || 'foobar';
 
 const usedTokens = new Set();
 
-const users = new mongoose.Schema(
-  {
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    email: { type: String },
-    role: { type: String, default: 'user', enum: ['admin', 'editor', 'user'] },
-  },
-  { toObject: { virtuals: true }, toJSON: { virtuals: true } }
-);
+const users = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  email: { type: String },
+  role: { type: String, default: 'user', enum: ['admin', 'editor', 'user'] },
+});
 
 users.virtual('capabilities', {
   ref: 'roles',
@@ -100,7 +97,7 @@ users.methods.comparePassword = function(password) {
 users.methods.generateToken = function(type) {
   let token = {
     id: this._id,
-    capabilities: this.capabilities[0].capabilities || 'read',
+    capabilities: this.capabilities,
     type: type || 'user',
   };
 
@@ -113,8 +110,7 @@ users.methods.generateToken = function(type) {
 };
 
 users.methods.can = function(capability) {
-  const capabilities = this.capabilities[0].capabilities;
-  return capabilities.includes(capability);
+  return capabilities.capabilitiesincludes(capability);
 };
 
 users.methods.generateKey = function() {

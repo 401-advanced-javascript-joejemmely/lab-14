@@ -16,8 +16,20 @@ let users = {
   user: { username: 'user', password: 'password', role: 'user' },
 };
 
+let roles = {
+  admin: {
+    role: 'admin',
+    capabilities: ['create', 'read', 'update', 'delete'],
+  },
+  editor: { role: 'editor', capabilities: ['create', 'read', 'update'] },
+  user: { role: 'user', capabilities: ['read'] },
+};
+
 beforeAll(async done => {
   await supergoose.startDB();
+  const admin = await new Roles(roles.admin).save();
+  const editor = await new Roles(roles.editor).save();
+  const user = await new Roles(roles.user).save();
   done();
 });
 
