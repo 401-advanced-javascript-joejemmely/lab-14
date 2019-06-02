@@ -97,10 +97,10 @@ users.methods.comparePassword = function(password) {
     .then(valid => (valid ? this : null));
 };
 
-users.methods.generateToken = function(type, capabilities) {
+users.methods.generateToken = function(type) {
   let token = {
     id: this._id,
-    capabilities: capabilities || 'read',
+    capabilities: this.capabilities[0].capabilities || 'read',
     type: type || 'user',
   };
 
