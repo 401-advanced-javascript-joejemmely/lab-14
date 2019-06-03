@@ -97,7 +97,7 @@ users.methods.comparePassword = function(password) {
 users.methods.generateToken = function(type) {
   let token = {
     id: this._id,
-    capabilities: this.capabilities || ['read'],
+    capabilities: this.capabilities.capabilities,
     type: type || 'user',
   };
 

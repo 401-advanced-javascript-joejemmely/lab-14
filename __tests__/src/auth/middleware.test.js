@@ -18,6 +18,10 @@ beforeAll(async done => {
   const admin = await new Users(users.admin).save();
   const editor = await new Users(users.editor).save();
   const user = await new Users(users.user).save();
+  const adminRole = await new Roles({
+    role: admin,
+    capabilities: ['create', 'read', 'update', 'delete'],
+  });
   done();
 });
 
