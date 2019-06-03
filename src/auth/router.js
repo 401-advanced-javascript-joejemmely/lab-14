@@ -85,7 +85,7 @@ authRouter.delete('/bye-bye', auth('delete'), (request, response, next) => {
 });
 
 // should require the superuser capability
-authRouter.get('/everything', (request, response, next) => {
+authRouter.get('/everything', auth('superuser'), (request, response, next) => {
   response.status(200).send(`This is ${request.path}`);
 });
 

@@ -22,7 +22,7 @@ users.virtual('capabilities', {
   ref: 'roles',
   localField: 'role',
   foreignField: 'role',
-  justOne: false,
+  justOne: true,
 });
 
 users.pre('findOne', function() {
@@ -97,7 +97,7 @@ users.methods.comparePassword = function(password) {
 users.methods.generateToken = function(type) {
   let token = {
     id: this._id,
-    capabilities: this.capabilities,
+    capabilities: this.capabilities || ['read'],
     type: type || 'user',
   };
 
@@ -110,7 +110,7 @@ users.methods.generateToken = function(type) {
 };
 
 users.methods.can = function(capability) {
-  return capabilities.capabilitiesincludes(capability);
+  return this.capabilities.capabilities.includes(capability);
 };
 
 users.methods.generateKey = function() {
